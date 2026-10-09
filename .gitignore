@@ -1,0 +1,4 @@
+build/
+*.exe
+smoke-screenshot.png
+smoke-screenshot.jpg
