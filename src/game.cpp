@@ -303,12 +303,29 @@ void SheepdogGame::UpdatePlaying(float dt) {
         dogWalkTime_ += dt * (sprinting ? 13.0f : 9.0f);
     }
 
-    const float minDogX = kFieldLeft + kFenceVisualInset + dogLeftExtent_;
-    const float maxDogX = kFieldRight - kFenceVisualInset - dogRightExtent_;
-    const float minDogY = kFieldTop + kFenceVisualInset + dogTopExtent_;
-    const float maxDogY = kFieldBottom - kFenceVisualInset - dogBottomExtent_;
-    dogPosition_.x = Clamp(dogPosition_.x, minDogX, maxDogX);
-    dogPosition_.y = Clamp(dogPosition_.y, minDogY, maxDogY);
+    const float cosAngle = std::cos(dogAngle_);
+    const float sinAngle = std::sin(dogAngle_);
+    const float sideX = -sinAngle;
+    const float sideY = cosAngle;
+    auto positive = [](float value) { return std::max(0.0f, value); };
+
+    float leftWorld = dogRightExtent_ * positive(-sideX) + dogLeftExtent_ * positive(sideX)
+        + dogBottomExtent_ * positive(cosAngle) + dogTopExtent_ * positive(-cosAngle);
+    float rightWorld = dogRightExtent_ * positive(sideX) + dogLeftExtent_ * positive(-sideX)
+        + dogBottomExtent_ * positive(-cosAngle) + dogTopExtent_ * positive(cosAngle);
+    float topWorld = dogRightExtent_ * positive(-sideY) + dogLeftExtent_ * positive(sideY)
+        + dogBottomExtent_ * positive(sinAngle) + dogTopExtent_ * positive(-sinAngle);
+    float bottomWorld = dogRightExtent_ * positive(sideY) + dogLeftExtent_ * positive(-sideY)
+        + dogBottomExtent_ * positive(-sinAngle) + dogTopExtent_ * positive(sinAngle);
+
+    constexpr float tolerance = 2.0f;
+    leftWorld = std::max(0.0f, leftWorld - tolerance);
+    rightWorld = std::max(0.0f, rightWorld - tolerance);
+    topWorld = std::max(0.0f, topWorld - tolerance);
+    bottomWorld = std::max(0.0f, bottomWorld - tolerance);
+
+    dogPosition_.x = Clamp(dogPosition_.x, kFieldLeft + kFenceVisualInset + leftWorld, kFieldRight - kFenceVisualInset - rightWorld);
+    dogPosition_.y = Clamp(dogPosition_.y, kFieldTop + kFenceVisualInset + topWorld, kFieldBottom - kFenceVisualInset - bottomWorld);
 
     if (IsKeyPressed(KEY_SPACE)) {
         barkTimer_ = 0.0f;
