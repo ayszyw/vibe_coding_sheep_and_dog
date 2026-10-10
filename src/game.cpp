@@ -321,7 +321,9 @@ void SheepdogGame::UpdatePlaying(float dt) {
     constexpr float tolerance = 2.0f;
     leftWorld = std::max(0.0f, leftWorld - tolerance);
     rightWorld = std::max(0.0f, rightWorld - tolerance);
-    constexpr float rightFenceExtraTolerance = 30.0f;
+    constexpr float leftFenceExtraTolerance = 10.0f;
+    leftWorld = std::max(0.0f, leftWorld - leftFenceExtraTolerance);
+    constexpr float rightFenceExtraTolerance = 35.0f;
     rightWorld = std::max(0.0f, rightWorld - rightFenceExtraTolerance);
     topWorld = std::max(0.0f, topWorld - tolerance);
     bottomWorld = std::max(0.0f, bottomWorld - tolerance);
