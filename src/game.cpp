@@ -639,7 +639,7 @@ void SheepdogGame::DrawDog() {
     const Vector2 side = {-forward.y, forward.x};
     const float bob = std::sin(dogWalkTime_ * 2.0f) * 1.2f;
 
-    DrawShadow({dogPosition_.x + 4.0f, dogPosition_.y + 8.0f}, 50.0f, 22.0f);
+    DrawShadow({dogPosition_.x + 2.0f, dogPosition_.y + 4.0f}, 46.0f, 18.0f);
     if (dogTexture_.id != 0) {
         const Vector2 position = {dogPosition_.x, dogPosition_.y + bob * 0.35f};
         const Rectangle source = {0.0f, 0.0f, 96.0f, 96.0f};
