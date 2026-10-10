@@ -122,6 +122,7 @@ void SheepdogGame::Run() {
     SetTargetFPS(60);
 
     canvas_ = LoadRenderTexture(kLogicalWidth, kLogicalHeight);
+    LoadGameAssets();
     PrepareAudio();
     Reset();
 
@@ -139,6 +140,7 @@ void SheepdogGame::Run() {
     }
 
     UnloadRenderTexture(canvas_);
+    UnloadGameAssets();
     if (audioReady_) {
         UnloadSound(barkSound_);
         UnloadSound(penSound_);
@@ -628,6 +630,18 @@ void SheepdogGame::DrawDog() {
     const float bob = std::sin(dogWalkTime_ * 2.0f) * 1.2f;
 
     DrawEllipse(dogPosition_.x, dogPosition_.y + 6.0f, 24.0f, 10.0f, Color{0, 0, 0, 45});
+    if (dogTexture_.id != 0) {
+        const Vector2 position = {dogPosition_.x, dogPosition_.y + bob * 0.35f};
+        const Rectangle source = {0.0f, 0.0f, 96.0f, 96.0f};
+        const Rectangle destination = {position.x - 34.0f, position.y - 34.0f, 68.0f, 68.0f};
+        DrawTexturePro(dogTexture_, source, destination, {34.0f, 34.0f}, dogAngle_ * RAD2DEG + 90.0f, WHITE);
+
+        if (barkTimer_ < 0.32f) {
+            const Vector2 snout = Vector2Add(position, Vector2Scale(forward, 25.0f));
+            DrawCircleV(Vector2Add(snout, Vector2Scale(forward, 3.0f)), 4.2f, Color{97, 44, 34, 255});
+        }
+        return;
+    }
     DrawEllipse(dogPosition_.x, dogPosition_.y + bob * 0.35f, 23.0f, 19.0f, kDogBody);
     DrawCircleV(Vector2Add(dogPosition_, Vector2Scale(forward, 3.0f)), 18.0f, kDogLight);
 
@@ -674,6 +688,13 @@ void SheepdogGame::DrawSheep(const Sheep& sheep) {
     const Vector2 position = {sheep.position.x, sheep.position.y + bob * 0.25f};
 
     DrawEllipse(position.x, position.y + 4.0f, 15.0f, 7.0f, Color{0, 0, 0, 42});
+
+    if (sheepTexture_.id != 0) {
+        const Rectangle source = {0.0f, 0.0f, 64.0f, 64.0f};
+        const Rectangle destination = {position.x - 18.0f, position.y - 18.0f, 36.0f, 36.0f};
+        DrawTexturePro(sheepTexture_, source, destination, {18.0f, 18.0f}, heading * RAD2DEG + 90.0f, WHITE);
+        return;
+    }
 
     for (int i = 0; i < 8; ++i) {
         const float angle = static_cast<float>(i) / 8.0f * 2.0f * PI;
@@ -747,6 +768,20 @@ void SheepdogGame::DrawOverlay() {
 void SheepdogGame::DrawFenceSegment(Vector2 start, Vector2 end, Color base, Color highlight) {
     const Vector2 direction = Vector2Normalize(Vector2Subtract(end, start));
     const Vector2 normal = {-direction.y, direction.x};
+    if (fenceTexture_.id != 0) {
+        const float length = Vector2Distance(start, end);
+        const float rotation = std::atan2(direction.y, direction.x) * RAD2DEG;
+        float offset = 0.0f;
+        while (offset < length) {
+            const float tileLength = std::min(64.0f, length - offset);
+            const Vector2 tileStart = Vector2Add(start, Vector2Scale(direction, offset));
+            const Rectangle source = {0.0f, 0.0f, tileLength, 24.0f};
+            const Rectangle destination = {tileStart.x, tileStart.y - 12.0f, tileLength, 24.0f};
+            DrawTexturePro(fenceTexture_, source, destination, {0.0f, 12.0f}, rotation, WHITE);
+            offset += tileLength;
+        }
+        return;
+    }
     DrawLineEx(start, end, 12.0f, base);
     DrawLineEx(Vector2Add(start, Vector2Scale(normal, 7.0f)), Vector2Add(end, Vector2Scale(normal, 7.0f)), 7.0f, highlight);
 
@@ -760,6 +795,49 @@ void SheepdogGame::DrawFenceSegment(Vector2 start, Vector2 end, Color base, Colo
             Vector2Add(center, Vector2Scale(normal, 11.0f)),
             6.0f,
             kFencePost);
+    }
+}
+
+void SheepdogGame::LoadGameAssets() {
+    const std::string appDirectory = GetApplicationDirectory();
+    auto loadTexture = [](const std::array<std::string, 4>& paths) {
+        for (const std::string& path : paths) {
+            if (FileExists(path.c_str())) {
+                return LoadTexture(path.c_str());
+            }
+        }
+        return Texture2D{};
+    };
+
+    dogTexture_ = loadTexture({
+        appDirectory + "../assets/dog.png",
+        appDirectory + "assets/dog.png",
+        "../assets/dog.png",
+        "assets/dog.png",
+    });
+    sheepTexture_ = loadTexture({
+        appDirectory + "../assets/sheep.png",
+        appDirectory + "assets/sheep.png",
+        "../assets/sheep.png",
+        "assets/sheep.png",
+    });
+    fenceTexture_ = loadTexture({
+        appDirectory + "../assets/fence.png",
+        appDirectory + "assets/fence.png",
+        "../assets/fence.png",
+        "assets/fence.png",
+    });
+}
+
+void SheepdogGame::UnloadGameAssets() {
+    if (dogTexture_.id != 0) {
+        UnloadTexture(dogTexture_);
+    }
+    if (sheepTexture_.id != 0) {
+        UnloadTexture(sheepTexture_);
+    }
+    if (fenceTexture_.id != 0) {
+        UnloadTexture(fenceTexture_);
     }
 }
 

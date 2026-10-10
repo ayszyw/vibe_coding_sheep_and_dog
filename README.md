@@ -39,6 +39,16 @@ Run `build/sheepdog-demo.exe`.
 
 Drive all 60 sheep through the glowing gate. Each sheep is worth 100 points. Finishing before three minutes adds a time bonus.
 
+## Replaceable Art
+
+All character and fence art is loaded from the `assets/` directory.
+
+- `dog.png`: 96x96 transparent PNG. The sprite should face up.
+- `sheep.png`: 64x64 transparent PNG. The sprite should face up.
+- `fence.png`: 64x24 transparent PNG. The rail runs horizontally with a post at the left edge.
+
+Replace the file with another PNG using the same name. If an image is missing, the game falls back to its original procedural drawing.
+
 ## Smoke Test
 
 Run `build/sheepdog-demo.exe --smoke-test`. It initializes the renderer and audio device, renders for about 1.5 seconds, exports `smoke-screenshot.png`, and exits.
