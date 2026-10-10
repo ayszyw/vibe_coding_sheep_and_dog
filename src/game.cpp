@@ -624,12 +624,22 @@ void SheepdogGame::DrawFence() {
     DrawCircleV({kGateRight, kPenBottom - 2.0f}, 9.0f, kGateGlow);
 }
 
+void SheepdogGame::DrawShadow(Vector2 center, float width, float height, float rotationRadians) {
+    if (shadowTexture_.id != 0) {
+        const Rectangle source = {0.0f, 0.0f, 64.0f, 32.0f};
+        const Rectangle destination = {center.x - width * 0.5f, center.y - height * 0.5f, width, height};
+        DrawTexturePro(shadowTexture_, source, destination, {width * 0.5f, height * 0.5f}, rotationRadians * RAD2DEG, WHITE);
+        return;
+    }
+    DrawEllipse(center.x, center.y, width * 0.5f, height * 0.5f, Color{0, 0, 0, 45});
+}
+
 void SheepdogGame::DrawDog() {
     const Vector2 forward = {std::cos(dogAngle_), std::sin(dogAngle_)};
     const Vector2 side = {-forward.y, forward.x};
     const float bob = std::sin(dogWalkTime_ * 2.0f) * 1.2f;
 
-    DrawEllipse(dogPosition_.x, dogPosition_.y + 6.0f, 24.0f, 10.0f, Color{0, 0, 0, 45});
+    DrawShadow({dogPosition_.x + 3.0f, dogPosition_.y + 6.0f}, 52.0f, 24.0f, dogAngle_);
     if (dogTexture_.id != 0) {
         const Vector2 position = {dogPosition_.x, dogPosition_.y + bob * 0.35f};
         const Rectangle source = {0.0f, 0.0f, 96.0f, 96.0f};
@@ -687,7 +697,7 @@ void SheepdogGame::DrawSheep(const Sheep& sheep) {
     const float bob = std::sin(static_cast<float>(GetTime()) * 5.0f + sheep.seed) * 0.8f;
     const Vector2 position = {sheep.position.x, sheep.position.y + bob * 0.25f};
 
-    DrawEllipse(position.x, position.y + 4.0f, 15.0f, 7.0f, Color{0, 0, 0, 42});
+    DrawShadow({position.x + 2.0f, position.y + 5.0f}, 32.0f, 16.0f, heading);
 
     if (sheepTexture_.id != 0) {
         const Rectangle source = {0.0f, 0.0f, 64.0f, 64.0f};
@@ -809,6 +819,21 @@ void SheepdogGame::LoadGameAssets() {
         return Texture2D{};
     };
 
+    Image shadowImage = GenImageColor(64, 32, BLANK);
+    auto* shadowPixels = static_cast<Color*>(shadowImage.data);
+    for (int y = 0; y < shadowImage.height; ++y) {
+        for (int x = 0; x < shadowImage.width; ++x) {
+            const float nx = (static_cast<float>(x) + 0.5f - 32.0f) / 31.0f;
+            const float ny = (static_cast<float>(y) + 0.5f - 16.0f) / 15.0f;
+            const float distance = nx * nx + ny * ny;
+            const float falloff = std::max(0.0f, 1.0f - distance);
+            shadowPixels[y * shadowImage.width + x] = Color{0, 0, 0, static_cast<unsigned char>(falloff * falloff * 72.0f)};
+        }
+    }
+    shadowTexture_ = LoadTextureFromImage(shadowImage);
+    UnloadImage(shadowImage);
+    SetTextureFilter(shadowTexture_, TEXTURE_FILTER_BILINEAR);
+
     dogTexture_ = loadTexture({
         appDirectory + "../assets/dog.png",
         appDirectory + "assets/dog.png",
@@ -830,6 +855,9 @@ void SheepdogGame::LoadGameAssets() {
 }
 
 void SheepdogGame::UnloadGameAssets() {
+    if (shadowTexture_.id != 0) {
+        UnloadTexture(shadowTexture_);
+    }
     if (dogTexture_.id != 0) {
         UnloadTexture(dogTexture_);
     }

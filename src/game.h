@@ -61,12 +61,14 @@ private:
     void DrawHud();
     void DrawOverlay();
     void DrawFenceSegment(Vector2 start, Vector2 end, Color base, Color highlight);
+    void DrawShadow(Vector2 center, float width, float height, float rotationRadians);
 
     void LoadGameAssets();
     void UnloadGameAssets();
     void PrepareAudio();
 
     RenderTexture2D canvas_{};
+    Texture2D shadowTexture_{};
     Texture2D dogTexture_{};
     Texture2D sheepTexture_{};
     Texture2D fenceTexture_{};
