@@ -34,3 +34,7 @@ target_compile_options(sheepdog-demo PRIVATE
 )
 
 target_link_libraries(sheepdog-demo PRIVATE raylib)
+
+target_link_options(sheepdog-demo PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:-static;-static-libgcc;-static-libstdc++>
+)

@@ -1,4 +1,5 @@
 build/
+dist/
 *.exe
 smoke-screenshot.png
 smoke-screenshot.jpg
