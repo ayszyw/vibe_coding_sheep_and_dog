@@ -624,11 +624,11 @@ void SheepdogGame::DrawFence() {
     DrawCircleV({kGateRight, kPenBottom - 2.0f}, 9.0f, kGateGlow);
 }
 
-void SheepdogGame::DrawShadow(Vector2 center, float width, float height, float rotationRadians) {
+void SheepdogGame::DrawShadow(Vector2 center, float width, float height) {
     if (shadowTexture_.id != 0) {
         const Rectangle source = {0.0f, 0.0f, 64.0f, 32.0f};
         const Rectangle destination = {center.x - width * 0.5f, center.y - height * 0.5f, width, height};
-        DrawTexturePro(shadowTexture_, source, destination, {width * 0.5f, height * 0.5f}, rotationRadians * RAD2DEG, WHITE);
+        DrawTexturePro(shadowTexture_, source, destination, {width * 0.5f, height * 0.5f}, 0.0f, WHITE);
         return;
     }
     DrawEllipse(center.x, center.y, width * 0.5f, height * 0.5f, Color{0, 0, 0, 45});
@@ -639,7 +639,7 @@ void SheepdogGame::DrawDog() {
     const Vector2 side = {-forward.y, forward.x};
     const float bob = std::sin(dogWalkTime_ * 2.0f) * 1.2f;
 
-    DrawShadow({dogPosition_.x + 3.0f, dogPosition_.y + 6.0f}, 52.0f, 24.0f, dogAngle_);
+    DrawShadow({dogPosition_.x + 4.0f, dogPosition_.y + 8.0f}, 50.0f, 22.0f);
     if (dogTexture_.id != 0) {
         const Vector2 position = {dogPosition_.x, dogPosition_.y + bob * 0.35f};
         const Rectangle source = {0.0f, 0.0f, 96.0f, 96.0f};
@@ -697,7 +697,7 @@ void SheepdogGame::DrawSheep(const Sheep& sheep) {
     const float bob = std::sin(static_cast<float>(GetTime()) * 5.0f + sheep.seed) * 0.8f;
     const Vector2 position = {sheep.position.x, sheep.position.y + bob * 0.25f};
 
-    DrawShadow({position.x + 2.0f, position.y + 5.0f}, 32.0f, 16.0f, heading);
+    DrawShadow({position.x + 2.0f, position.y + 5.0f}, 32.0f, 16.0f);
 
     if (sheepTexture_.id != 0) {
         const Rectangle source = {0.0f, 0.0f, 64.0f, 64.0f};

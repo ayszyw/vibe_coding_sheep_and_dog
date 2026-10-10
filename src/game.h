@@ -61,7 +61,7 @@ private:
     void DrawHud();
     void DrawOverlay();
     void DrawFenceSegment(Vector2 start, Vector2 end, Color base, Color highlight);
-    void DrawShadow(Vector2 center, float width, float height, float rotationRadians);
+    void DrawShadow(Vector2 center, float width, float height);
 
     void LoadGameAssets();
     void UnloadGameAssets();
