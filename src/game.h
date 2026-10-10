@@ -72,6 +72,10 @@ private:
     Texture2D dogTexture_{};
     Texture2D sheepTexture_{};
     Texture2D fenceTexture_{};
+    float dogLeftExtent_ = 28.0f;
+    float dogRightExtent_ = 20.0f;
+    float dogTopExtent_ = 24.0f;
+    float dogBottomExtent_ = 20.0f;
     GameState state_ = GameState::Playing;
     bool smokeTest_ = false;
 

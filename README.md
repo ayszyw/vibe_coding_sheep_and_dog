@@ -43,7 +43,7 @@ Drive all 60 sheep through the glowing gate. Each sheep is worth 100 points. Fin
 
 All character and fence art is loaded from the `assets/` directory.
 
-- `dog.png`: 96x96 transparent PNG. The sprite should face up.
+- `dog.png`: 96x96 transparent PNG. The sprite should face up. Collision bounds are calculated from the visible alpha pixels.
 - `sheep.png`: 64x64 transparent PNG. The sprite should face up.
 - `fence.png`: 64x24 transparent PNG. The rail runs horizontally with a post at the left edge.
 

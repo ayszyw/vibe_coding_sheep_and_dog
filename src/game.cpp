@@ -29,7 +29,8 @@ constexpr float kGateRight = 410.0f;
 
 constexpr int kSheepCount = 60;
 constexpr float kSheepRadius = 11.0f;
-constexpr float kDogRadius = 20.0f;
+constexpr float kDogDrawSize = 68.0f;
+constexpr float kFenceVisualInset = 5.0f;
 constexpr float kDogSpeed = 330.0f;
 constexpr float kDogSprintSpeed = 450.0f;
 constexpr float kSheepCalmSpeed = 72.0f;
@@ -302,9 +303,12 @@ void SheepdogGame::UpdatePlaying(float dt) {
         dogWalkTime_ += dt * (sprinting ? 13.0f : 9.0f);
     }
 
-    const float dogMargin = kDogRadius + 8.0f;
-    dogPosition_.x = Clamp(dogPosition_.x, kFieldLeft + dogMargin, kFieldRight - dogMargin);
-    dogPosition_.y = Clamp(dogPosition_.y, kFieldTop + dogMargin, kFieldBottom - dogMargin);
+    const float minDogX = kFieldLeft + kFenceVisualInset + dogLeftExtent_;
+    const float maxDogX = kFieldRight - kFenceVisualInset - dogRightExtent_;
+    const float minDogY = kFieldTop + kFenceVisualInset + dogTopExtent_;
+    const float maxDogY = kFieldBottom - kFenceVisualInset - dogBottomExtent_;
+    dogPosition_.x = Clamp(dogPosition_.x, minDogX, maxDogX);
+    dogPosition_.y = Clamp(dogPosition_.y, minDogY, maxDogY);
 
     if (IsKeyPressed(KEY_SPACE)) {
         barkTimer_ = 0.0f;
@@ -643,8 +647,8 @@ void SheepdogGame::DrawDog() {
     if (dogTexture_.id != 0) {
         const Vector2 position = {dogPosition_.x, dogPosition_.y + bob * 0.35f};
         const Rectangle source = {0.0f, 0.0f, 96.0f, 96.0f};
-        const Rectangle destination = {position.x - 34.0f, position.y - 34.0f, 68.0f, 68.0f};
-        DrawTexturePro(dogTexture_, source, destination, {34.0f, 34.0f}, dogAngle_ * RAD2DEG + 90.0f, WHITE);
+        const Rectangle destination = {position.x - kDogDrawSize * 0.5f, position.y - kDogDrawSize * 0.5f, kDogDrawSize, kDogDrawSize};
+        DrawTexturePro(dogTexture_, source, destination, {kDogDrawSize * 0.5f, kDogDrawSize * 0.5f}, dogAngle_ * RAD2DEG + 90.0f, WHITE);
 
         if (barkTimer_ < 0.32f) {
             const Vector2 snout = Vector2Add(position, Vector2Scale(forward, 25.0f));
@@ -834,12 +838,50 @@ void SheepdogGame::LoadGameAssets() {
     UnloadImage(shadowImage);
     SetTextureFilter(shadowTexture_, TEXTURE_FILTER_BILINEAR);
 
-    dogTexture_ = loadTexture({
+    const std::array<std::string, 4> dogPaths = {
         appDirectory + "../assets/dog.png",
         appDirectory + "assets/dog.png",
         "../assets/dog.png",
         "assets/dog.png",
-    });
+    };
+    for (const std::string& path : dogPaths) {
+        if (!FileExists(path.c_str())) {
+            continue;
+        }
+
+        Image dogImage = LoadImage(path.c_str());
+        if (dogImage.data != nullptr) {
+            ImageFormat(&dogImage, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+            const auto* pixels = static_cast<const Color*>(dogImage.data);
+            int minX = dogImage.width;
+            int minY = dogImage.height;
+            int maxX = -1;
+            int maxY = -1;
+            for (int y = 0; y < dogImage.height; ++y) {
+                for (int x = 0; x < dogImage.width; ++x) {
+                    if (pixels[y * dogImage.width + x].a > 8) {
+                        minX = std::min(minX, x);
+                        minY = std::min(minY, y);
+                        maxX = std::max(maxX, x);
+                        maxY = std::max(maxY, y);
+                    }
+                }
+            }
+
+            if (maxX >= minX && maxY >= minY) {
+                const float scaleX = kDogDrawSize / static_cast<float>(dogImage.width);
+                const float scaleY = kDogDrawSize / static_cast<float>(dogImage.height);
+                dogLeftExtent_ = (static_cast<float>(dogImage.width) * 0.5f - static_cast<float>(minX)) * scaleX;
+                dogRightExtent_ = (static_cast<float>(maxX + 1) - static_cast<float>(dogImage.width) * 0.5f) * scaleX;
+                dogTopExtent_ = (static_cast<float>(dogImage.height) * 0.5f - static_cast<float>(minY)) * scaleY;
+                dogBottomExtent_ = (static_cast<float>(maxY + 1) - static_cast<float>(dogImage.height) * 0.5f) * scaleY;
+            }
+
+            dogTexture_ = LoadTextureFromImage(dogImage);
+            UnloadImage(dogImage);
+        }
+        break;
+    }
     sheepTexture_ = loadTexture({
         appDirectory + "../assets/sheep.png",
         appDirectory + "assets/sheep.png",
